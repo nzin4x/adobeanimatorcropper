@@ -66,6 +66,8 @@ for idx in range(len(defs)):
     
     print("name : ", name, " width : ", width, " height[",height,"], x[",x,"], y[",y,"], fx[",fx,"], fy[",fy,"], fw[",fw,"], fh[",fh,"]")
 
+    if fx >=0 :
+        fx = 0
     if fy >=0 :
         fy = 0
 
