@@ -47,8 +47,8 @@ for idx in range(len(defs)):
     #if idx < 58:
     #    continue
 
-    if 'NOTE DOWN' not in name :
-       continue
+    #if 'NOTE DOWN' not in name :
+    #   continue
 
     if idx >= 1 :
         if defs[idx - 1]['height'] == defs[idx - 0]['height'] and defs[idx - 1]['width'] == defs[idx - 0]['width'] and defs[idx - 1]['y'] == defs[idx - 0]['y']  and defs[idx - 1]['x'] == defs[idx - 0]['x']:
