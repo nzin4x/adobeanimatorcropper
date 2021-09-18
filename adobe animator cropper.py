@@ -3,6 +3,7 @@ from pathlib import Path
 import os
 from PIL import Image as Image, ImageOps
 import argparse
+import ntpath
 
 parser = argparse.ArgumentParser(description = "adobe animator 로 만들어진 이미지와 xml 을 이용해서 작은 이미지를 생성한다")
 parser.add_argument('file', help="이미지 파일으 경로, xml 과 이름이 같아야 함")
@@ -10,8 +11,7 @@ args = parser.parse_args()
 
 path, ext = os.path.splitext(args.file)
 base = os.path.dirname(args.file)
-
-print("dir name : " + base)
+filename = ntpath.basename(args.file)
 
 deffile = os.path.join(path + ".xml")
 imgfile = os.path.join(path + ".png")
@@ -23,6 +23,7 @@ soup = BeautifulSoup(contents, 'lxml-xml')
 
 defs = soup.findAll('SubTexture')
 
+Path(os.path.join(base, filename + "_crop")).mkdir(parents=True, exist_ok=True)
 for idx in range(len(defs)): 
     iDef = defs[idx]
     name = iDef["name"]
@@ -46,8 +47,8 @@ for idx in range(len(defs)):
     #if idx < 58:
     #    continue
 
-    #if 'idle' not in name :
-    #    continue
+    if 'NOTE DOWN' not in name :
+       continue
 
     if idx >= 1 :
         if defs[idx - 1]['height'] == defs[idx - 0]['height'] and defs[idx - 1]['width'] == defs[idx - 0]['width'] and defs[idx - 1]['y'] == defs[idx - 0]['y']  and defs[idx - 1]['x'] == defs[idx - 0]['x']:
@@ -55,21 +56,22 @@ for idx in range(len(defs)):
             continue
 
     org = Image.open(imgfile)
-    # 409, 412 가 우측 아래가 기준
 
     cropped = org.crop((x, y, x + width, y + height))
 
-    
-    Path(os.path.join(base, 'crop')).mkdir(parents=True, exist_ok=True)
-    crop_img_path = os.path.join(base, 'crop', '' + name + '.png')
+    crop_img_path = os.path.join(base, filename + "_crop", name + '.png')
     
     new_canvas = (fw, fh)
     new_image = Image.new("RGBA", new_canvas)
     
     print("name : ", name, " width : ", width, " height[",height,"], x[",x,"], y[",y,"], fx[",fx,"], fy[",fy,"], fw[",fw,"], fh[",fh,"]")
+
+    if fy >=0 :
+        fy = 0
+
     new_image.paste(cropped, (-fx, -fy))
     new_image.save(crop_img_path)
-    new_image.save(crop_img_path)
+    #cropped.save(crop_img_path)
 
 
     #org.border(Color('transparent'), int((460 - width) / 2), int((460 - height) / 2) )
