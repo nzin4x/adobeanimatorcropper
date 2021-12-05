@@ -2,81 +2,153 @@ from bs4 import BeautifulSoup
 from pathlib import Path
 import os
 from PIL import Image as Image, ImageOps
-import argparse
 import ntpath
+from easygui import *
 
-parser = argparse.ArgumentParser(description = "adobe animator 로 만들어진 이미지와 xml 을 이용해서 작은 이미지를 생성한다")
-parser.add_argument('file', help="이미지 파일으 경로, xml 과 이름이 같아야 함")
-args = parser.parse_args()
+# 1 select a inputfile
+inputFileName = fileopenbox('Please choose a XML or PNG file','', '*.*')
 
-path, ext = os.path.splitext(args.file)
-base = os.path.dirname(args.file)
-filename = ntpath.basename(args.file)
+path, ext = os.path.splitext(inputFileName)
+base = os.path.dirname(inputFileName)
 
 deffile = os.path.join(path + ".xml")
 imgfile = os.path.join(path + ".png")
 
-infile = open(deffile,"r", encoding='utf-8')
-contents = infile.read()
 
-soup = BeautifulSoup(contents, 'lxml-xml')
+def parseFileAndMakeImage(deffile, imgfile):
 
-defs = soup.findAll('SubTexture')
+    infile = open(deffile,"r", encoding='utf-8')
+    contents = infile.read()
 
-Path(os.path.join(base, filename + "_crop")).mkdir(parents=True, exist_ok=True)
-for idx in range(len(defs)): 
-    iDef = defs[idx]
-    name = iDef["name"]
-    
-    h = int(iDef["height"])
-    w = int(iDef["width"])
-    x = int(iDef["x"])
-    y = int(iDef["y"])
-    try:
-        fw = int(iDef["frameWidth"])
-        fh = int(iDef["frameHeight"])
-        fx = int(iDef["frameX"])
-        fy = int(iDef["frameY"])
-    except:
-        fw = w
-        fh = h
-        fx = 0
-        fy = 0
-    # print("name : ", name, " width : ", width)
+    soup = BeautifulSoup(contents, 'lxml-xml')
 
-    # if idx < 58:
-    #     continue
+    line = soup.findAll('SubTexture')
 
-    if 'NOTE DOWN' not in name:
-        continue
+    Path(os.path.join(base, path + "_crop")).mkdir(parents=True, exist_ok=True)
 
-    if idx >= 1 :
-        if defs[idx - 1]['height'] == defs[idx - 0]['height'] and defs[idx - 1]['width'] == defs[idx - 0]['width'] \
-                and defs[idx - 1]['y'] == defs[idx - 0]['y'] and defs[idx - 1]['x'] == defs[idx - 0]['x']:
-            print('같은 이미지 버리기 name : ', name)
-            continue
+    maxWidth = 0
+    maxHeight = 0
+    for idx in range(len(line)): 
+        aLine = line[idx]
+        name = aLine["name"]
+        h = int(aLine["height"])
+        w = int(aLine["width"])
+        try:
+            fw = int(aLine["frameWidth"])
+            fh = int(aLine["frameHeight"])
+        except:
+            fw = w
+            fh = h
 
-    org = Image.open(imgfile)
+        if maxWidth < fw :
+            maxWidth = fw
 
-    cropped = org.crop((x, y, x + w, y + h))
+        if maxHeight < fh :
+            maxHeight = fh
 
-    canvas_img_path = os.path.join(base, filename + "_crop", 'canvas ' + name + '.png')
-    tight_img_path = os.path.join(base, filename + "_crop", 'tight ' + name + '.png')
-    
-    new_canvas = (fw, fh)
-    new_image = Image.new("RGBA", new_canvas)
-    
-    print("name : ", name, " width : ", w, " height[", h, "], x[", x, "], y[",
-          y, "], fx[", fx, "], fy[", fy, "], fw[", fw, "], fh[", fh, "]")
+    print("가장 큰 width {}".format(maxWidth))
+    print("가장 큰 height {}".format(maxHeight))
 
-    # if fx > 0:
-    #     fx = 0
-    # if fy > 0:
-    #     fy = 0
 
-    new_image.paste(cropped, (fw - w + fx, fh - h + fy))
-    new_image.save(canvas_img_path)
-    # cropped.save(tight_img_path)
+    for idx in range(len(line)): 
+        # break # 임시로 끄기
 
-    # org.border(Color('transparent'), int((460 - w) / 2), int((460 - h) / 2) )
-    # org.save(filename = os.path.join(base, 'crop', 'b' + name + '.png'))
+        aLine = line[idx]
+        name = aLine["name"]
+        
+        h = int(aLine["height"])
+        w = int(aLine["width"])
+        x = int(aLine["x"])
+        y = int(aLine["y"])
+        try:
+            fw = int(aLine["frameWidth"])
+            fh = int(aLine["frameHeight"])
+            fx = int(aLine["frameX"])
+            fy = int(aLine["frameY"])
+        except:
+            fw = w
+            fh = h
+            fx = 0
+            fy = 0
+        # print("name : ", name, " width : ", width)
+
+        # if idx < 58:
+        #     continue
+
+        #if 'stand' not in name:
+        #    continue
+
+        # 같은 이미지가 많은 이유는 animator 의 멈춰있는 시간까지 계산에 넣었기 때문이다.
+        # if idx >= 1 :
+        #     if defs[idx - 1]['height'] == defs[idx - 0]['height'] and defs[idx - 1]['width'] == defs[idx - 0]['width'] \
+        #             and defs[idx - 1]['y'] == defs[idx - 0]['y'] and defs[idx - 1]['x'] == defs[idx - 0]['x']:
+        #         print('같은 이미지 버리기 name : ', name)
+        #         continue
+
+        org = Image.open(imgfile)
+
+        cropped = org.crop((x, y, x + w, y + h))
+
+        canvas_img_path = os.path.join(base, path + "_crop", 'canvas ' + name + '.png')
+
+        ox = 0
+        oy = 0
+
+        if "shaggy_up" in name:
+            ox = -6
+
+        if "shaggy_right" in name:
+            ox = -20
+            oy = -40
+        if "shaggy_left" in name:
+            ox = 100
+            oy = -120
+        if "shaggy_down" in name:
+            oy = -170
+
+        dx_left = 100
+        dx_right = -20
+        dy = 0
+        
+        # new_canvas = (fw, fh)
+        new_canvas = (maxWidth + dx_left + -dx_right, maxHeight)
+        new_image = Image.new("RGBA", new_canvas)
+        
+        print("name : ", name, " width : ", w, " height[", h, "], x[", x, "], y[",
+            y, "], fx[", fx, "], fy[", fy, "], fw[", fw, "], fh[", fh, "]")
+
+        # if fx > 0:
+        #     fx = 0
+        # if fy > 0:
+        #     fy = 0
+
+        # animation.addByPrefix('idle', 'shaggy_idle', 24);
+        # animation.addByPrefix('idle2', 'shaggy_idle2', 24);
+        # animation.addByPrefix('singUP', 'shaggy_up', 30);
+        # animation.addByPrefix('singRIGHT', 'shaggy_right', 30);
+        # animation.addByPrefix('singDOWN', 'shaggy_down', 30);
+        # animation.addByPrefix('singLEFT', 'shaggy_left', 30);
+
+        # addOffset('idle');
+        # addOffset('idle2');
+        # addOffset("singUP", -6, 0)
+        # addOffset("singRIGHT", -20, -40);
+        # addOffset("singLEFT", 100, -120);
+        # addOffset("singDOWN", 0, -170); 
+
+
+        
+
+        pasteX = -fx -ox + dx_left
+        pasteY = -fy -oy 
+
+        print("pasteX : " + str(pasteX) + ", pasteY : " + str(pasteY))
+
+        new_image.paste(cropped, (pasteX, pasteY))
+        new_image.save(canvas_img_path)
+        # cropped.save(tight_img_path)
+
+
+        # org.save(filename = os.path.join(base, 'crop', 'b' + name + '.png'))
+
+parseFileAndMakeImage(deffile, imgfile)
