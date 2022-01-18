@@ -31,7 +31,7 @@ for idx in range(len(files)):
     # 파일 경로
     file_path, ext = os.path.splitext(file_full_path) # extension 확장자 .xxx .png .xml split 짜르다 나누다.
     file_dir = os.path.dirname(file_full_path)
-    file_name = ntpath.basename(file_full_path)
+    file_name = os.path.basename(file_full_path)
 
     # 만들어질 이미지 경로
     save_folder = os.path.join(file_dir + "/" + str(target_width) + "x" + str(target_height))
@@ -40,4 +40,4 @@ for idx in range(len(files)):
     # 빈종이 만들기
     new_image = Image.new("RGBA", (target_width, target_height))
     new_image.paste(edit_image, (int((target_width / 2) - (edit_width / 2)), int((target_height / 2) - (edit_height / 2))))
-    new_image.save(save_folder + "/" + file_name + "." + ext)
+    new_image.save(save_folder + "/" + file_name)

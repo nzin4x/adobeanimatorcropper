@@ -36,4 +36,4 @@ for idx in range(len(files)):
     if xy == 'y':
         new_image.paste(edit_image, (int((edit_width / 2) - (edit_width / 2)), int((edit_height / 2) - (edit_height / 2)) - pixel))
 
-    new_image.save(save_folder + "/" + file_name + "." + ext)
+    new_image.save(save_folder + "/" + file_name)
