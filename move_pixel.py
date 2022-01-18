@@ -7,10 +7,8 @@ from easygui import *
 # 선택된 파일들의 배열
 files = fileopenbox('이동할 이미지들을 선택하세요','', '*.png', multiple=True)
 
-x = (input("x는 얼만큼 이동? : "))
-y = (input("y는 얼만큼 이동? : "))
-
-pixel = int(input("얼마나 이동 ? : "))
+x = int(input("x는 얼만큼 이동? : "))
+y = int(input("y는 얼만큼 이동? : "))
 
 for idx in range(len(files)): 
     # 파일의 위치
@@ -28,7 +26,7 @@ for idx in range(len(files)):
     file_name = os.path.basename(file_full_path)
 
     # 만들어질 이미지 경로
-    save_folder = os.path.join(file_dir + "/" + (xy) + "_" + str(pixel))
+    save_folder = os.path.join(file_dir + "/" + str(x) + "_" + str(y))
     os.makedirs(save_folder, exist_ok=True)
     
     # 빈종이 만들기
