@@ -7,7 +7,9 @@ from easygui import *
 # 선택된 파일들의 배열
 files = fileopenbox('이동할 이미지들을 선택하세요','', '*.png', multiple=True)
 
-xy = (input("x ? y : "))
+x = (input("x는 얼만큼 이동? : "))
+y = (input("y는 얼만큼 이동? : "))
+
 pixel = int(input("얼마나 이동 ? : "))
 
 for idx in range(len(files)): 
@@ -31,9 +33,6 @@ for idx in range(len(files)):
     
     # 빈종이 만들기
     new_image = Image.new("RGBA", (edit_width, edit_height))
-    if xy == 'x':
-        new_image.paste(edit_image, (int((edit_width / 2) - (edit_width / 2)) + pixel, int((edit_height / 2) - (edit_height / 2))))
-    if xy == 'y':
-        new_image.paste(edit_image, (int((edit_width / 2) - (edit_width / 2)), int((edit_height / 2) - (edit_height / 2)) - pixel))
+    new_image.paste(edit_image, (int((edit_width / 2) - (edit_width / 2)) + x, int((edit_height / 2) - (edit_height / 2) - y)))
 
     new_image.save(save_folder + "/" + file_name)
